@@ -60,7 +60,9 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
 
   // Owner credentials (separate from main config)
   const [currentOwnerEmail, setCurrentOwnerEmail] = useState('');
+  const [currentOwnerName, setCurrentOwnerName] = useState('');
   const [ownerData, setOwnerData] = useState({
+    newName: '',
     newEmail: '',
     newPassword: '',
     confirmPassword: '',
@@ -120,6 +122,7 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
           });
 
           setCurrentOwnerEmail(t.owner?.email || '');
+          setCurrentOwnerName(t.owner?.name || '');
         }
       } catch (err) {
         console.warn('Failed to load tenant details:', err);
@@ -206,8 +209,8 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
   };
 
   const handleOwnerSave = async () => {
-    if (!ownerData.newEmail && !ownerData.newPassword) {
-      setError('Provide a new email or password to update owner credentials.');
+    if (!ownerData.newName.trim() && !ownerData.newEmail && !ownerData.newPassword) {
+      setError('Provide a new name, email, or password to update owner credentials.');
       return;
     }
     if (ownerData.newPassword && ownerData.newPassword !== ownerData.confirmPassword) {
@@ -224,6 +227,7 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
     setSuccess('');
 
     const payload = {};
+    if (ownerData.newName.trim()) payload.name = ownerData.newName.trim();
     if (ownerData.newEmail.trim()) payload.email = ownerData.newEmail.trim();
     if (ownerData.newPassword) payload.password = ownerData.newPassword;
 
@@ -232,7 +236,8 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
       if (res.success) {
         setSuccess(res.message || 'Owner credentials updated!');
         if (payload.email) setCurrentOwnerEmail(payload.email.toLowerCase());
-        setOwnerData({ newEmail: '', newPassword: '', confirmPassword: '' });
+        if (payload.name) setCurrentOwnerName(payload.name);
+        setOwnerData({ newName: '', newEmail: '', newPassword: '', confirmPassword: '' });
       }
     } catch (err) {
       setError(err.message || 'Failed to update owner credentials.');
@@ -489,12 +494,22 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
                   <UserCog size={14} color="#f59e0b" />
                   Store Owner Credentials
                 </h4>
-                <span style={sectionHintStyle}>Update the merchant owner's login email and/or password. Leave fields blank to keep current values.</span>
-                <div style={{ marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>Current Login Email: </span>
-                  <span style={{ fontSize: '0.82rem', color: '#818cf8', fontFamily: 'monospace' }}>{currentOwnerEmail || '—'}</span>
+                <span style={sectionHintStyle}>Update the merchant owner's name, login email and/or password. Leave fields blank to keep current values.</span>
+                <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>Current Name: </span>
+                    <span style={{ fontSize: '0.82rem', color: '#f59e0b', fontWeight: 600 }}>{currentOwnerName || '—'}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>Current Login Email: </span>
+                    <span style={{ fontSize: '0.82rem', color: '#818cf8', fontFamily: 'monospace' }}>{currentOwnerEmail || '—'}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label className="form-label">New Name</label>
+                    <input type="text" name="newName" className="form-input" placeholder="Leave blank to keep current" value={ownerData.newName} onChange={handleOwnerChange} />
+                  </div>
                   <div className="form-group">
                     <label className="form-label">New Email</label>
                     <input type="email" name="newEmail" className="form-input" placeholder="Leave blank to keep current" value={ownerData.newEmail} onChange={handleOwnerChange} />
