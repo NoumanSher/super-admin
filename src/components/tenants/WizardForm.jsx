@@ -167,7 +167,7 @@ export default function WizardForm({ onCancel, onSubmitSuccess }) {
     };
 
     try {
-      onSubmitSuccess(payload);
+      await onSubmitSuccess(payload);
     } catch (err) {
       setError(err.message || 'Provisioning sequence failed');
       setSubmitting(false);

@@ -148,19 +148,25 @@ export default function Tenants() {
         fetchTenants();
       }
     } catch (err) {
-      // Simulated immediate tenant compilation for full visual integration
-      const simulatedTenant = {
-        _id: String(Date.now()),
-        name: payload.tenant.name,
-        slug: payload.tenant.slug,
-        domains: payload.tenant.domains,
-        subscription: payload.tenant.subscription,
-        status: payload.tenant.subscription?.status || 'active',
-        database: payload.tenant.database,
-        createdAt: new Date().toISOString()
-      };
-      setTenants(prev => [simulatedTenant, ...prev]);
-      setShowWizard(false);
+      console.error("Failed provisioning tenant:", err);
+      // Fallback to local dev mock only if backend is offline / failed to fetch
+      if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+        const simulatedTenant = {
+          _id: String(Date.now()),
+          name: payload.tenant.name,
+          slug: payload.tenant.slug,
+          domains: payload.tenant.domains,
+          subscription: payload.tenant.subscription,
+          status: payload.tenant.subscription?.status || 'active',
+          database: payload.tenant.database,
+          createdAt: new Date().toISOString()
+        };
+        setTenants(prev => [simulatedTenant, ...prev]);
+        setShowWizard(false);
+      } else {
+        // Rethrow the API error so the WizardForm can capture and display it
+        throw err;
+      }
     }
   };
 
@@ -497,7 +503,29 @@ export default function Tenants() {
                   <span style={{ color: '#fff', marginLeft: '6px' }}>({selectedTenant.database?.name || 'db_tenant_' + selectedTenant.slug})</span>
                 </p>
               </div>
-              </div>
+
+              {/* Provisioning Error (if failed) */}
+              {selectedTenant.status === 'deleted' && selectedTenant.provisioningError && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.08)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginTop: '4px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fca5a5', fontWeight: 600 }}>
+                    <ShieldAlert size={16} />
+                    <span>Provisioning Sequence Failure</span>
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: 0, fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    {selectedTenant.provisioningError}
+                  </p>
+                </div>
+              )}
+            </div>
 
 
               {/* Row 4: Service status mappings */}
