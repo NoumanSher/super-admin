@@ -1,5 +1,5 @@
 // const BASE_URL = 'http://localhost:7418/api';
-const BASE_URL = 'https://pakshipper-backend.vercel.app/api';
+const BASE_URL = 'https://pakshipper-backend-steel.vercel.app/api';
 
 /**
  * Perform a fetch request to the backend platform routes

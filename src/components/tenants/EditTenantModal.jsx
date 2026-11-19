@@ -263,10 +263,14 @@ export default function EditTenantModal({ tenant, onClose, onSaveSuccess }) {
 
     const updates = {
       name: formData.name,
-      subscription: { plan: formData.plan },
       // Always send the full domains array from state
       domains: domainsList,
     };
+
+    // Only send subscription if the plan actually changed, preventing unneeded subdocument casting
+    if (formData.plan && formData.plan !== tenant.subscription?.plan) {
+      updates.subscription = { plan: formData.plan };
+    }
 
     const config = {};
 

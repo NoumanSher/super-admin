@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Store, Plus, Search, ShieldAlert, Sliders, Play, Square, Trash2, X, Check, HelpCircle, Activity, Pencil, AlertTriangle } from 'lucide-react';
+import { Store, Plus, Search, ShieldAlert, Sliders, Play, Square, Trash2, X, Check, HelpCircle, Activity, Pencil, AlertTriangle, CreditCard } from 'lucide-react';
 import { api } from '../services/api';
 import WizardForm from '../components/tenants/WizardForm';
 import EditTenantModal from '../components/tenants/EditTenantModal';
+import ManualPlanModal from '../components/tenants/ManualPlanModal';
 
 export default function Tenants() {
   const [tenants, setTenants] = useState([]);
@@ -15,6 +16,7 @@ export default function Tenants() {
   const [selectedTenant, setSelectedTenant] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showManualPlanModal, setShowManualPlanModal] = useState(false);
 
   const fetchTenants = async () => {
     setLoading(true);
@@ -313,6 +315,20 @@ export default function Tenants() {
                             <span>Edit</span>
                           </button>
 
+                          {/* Manual Plan Activation */}
+                          <button
+                            onClick={() => {
+                              setSelectedTenant(tenant);
+                              setShowManualPlanModal(true);
+                            }}
+                            className="btn-secondary"
+                            style={{ padding: '6px 12px', fontSize: '0.75rem', gap: '4px', borderColor: 'rgba(99, 102, 241, 0.3)', color: '#818cf8' }}
+                            title="Activate or upgrade store subscription plan"
+                          >
+                            <CreditCard size={12} />
+                            <span>Plan</span>
+                          </button>
+
                           {/* Config Details */}
                           <button
                             onClick={() => openConfigureDetails(tenant)}
@@ -599,6 +615,15 @@ export default function Tenants() {
           tenant={selectedTenant}
           onClose={() => { setShowEditModal(false); setSelectedTenant(null); }}
           onSaveSuccess={() => fetchTenants()}
+        />
+      )}
+
+      {/* MODAL 4: Manual Plan Activation & Upgrade */}
+      {showManualPlanModal && selectedTenant && (
+        <ManualPlanModal
+          tenant={selectedTenant}
+          onClose={() => { setShowManualPlanModal(false); setSelectedTenant(null); }}
+          onSuccess={() => fetchTenants()}
         />
       )}
 
